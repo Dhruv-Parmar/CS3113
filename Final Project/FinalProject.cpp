@@ -1,5 +1,13 @@
 #include "FinalProject.h"
 
+// To do:   P2 Entity (derive it from p1)
+//			bullets entity
+//			sprites
+//			background + music
+//			"tweening"
+// still have time: particle effects, laser, blocks, konami code
+
+
 void DrawText(int fontTexture, std::string text, float size, float spacing, ShaderProgram *program) {
 	float texture_size = 1.0 / 16.0f;
 	std::vector<float> vertexData;
@@ -80,6 +88,7 @@ void Game_Entity::update(){
 		{
 			state = directions;
 		}
+		renderP1();
 		render_main_menu();
 		break;
 	case directions:
@@ -143,10 +152,10 @@ void Game_Entity::render_directions(){
 
 void Game_Entity::render_play(){
 
-	program->setModelMatrix(modelMatrix);
+	/*program->setModelMatrix(modelMatrix);
 	modelMatrix.identity();
 	modelMatrix.Translate(-.25, 1.5, 0);
-	DrawText(fontID, "Play", .5, -.25, program);
+	DrawText(fontID, "Play", .5, -.25, program);*/
 	renderP1();
 
 }
@@ -177,7 +186,7 @@ void Game_Entity::renderP1(){
 	program->setModelMatrix(modelMatrix);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	modelMatrix.identity();
-	modelMatrix.Scale(.25, .25, 1.0);
+	//modelMatrix.Scale(.25, .25, 1.0);
 	modelMatrix.Translate(player1.position_x, player1.position_y, 0.0f);
 	glDisableVertexAttribArray(program->positionAttribute);
 	glDisableVertexAttribArray(program->texCoordAttribute);
@@ -197,6 +206,7 @@ void Game_Entity::run(){
 	projectionMatrix.setOrthoProjection(-3.55f, 3.55f, -2.0f, 2.0f, -1.0f, 1.0f);
 	fontID = LoadTexture("font1.png");
 	player1.textureID = LoadTexture("Megaman.png");
+
 	program = new ShaderProgram(RESOURCE_FOLDER"vertex_textured.glsl", RESOURCE_FOLDER"fragment_textured.glsl");
 	while (!done){
 		process_events();
