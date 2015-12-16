@@ -13,13 +13,42 @@ GLuint LoadTexture(const char *image_path){
 	return textureID;
 }
 
-
-//P1_Entity::P1_Entity(float x, float y, float height, float width, unsigned int textureID) :position_x(x), position_y(y), height(height), width(width), textureID(textureID){}
-
 P1_Entity::P1_Entity():active(false){}
 
+bool P1_Entity::collide_left(){
+	if (position_x - .0025 < -8.0f)
+		return true;
+	else return false; // set collision if needed
+}
+
+
+bool P1_Entity::collide_right(){
+	if (position_x - .0025 > 8.0f)
+		return true;
+	else return false; // set collision if needed
+}
+
+bool P1_Entity::collide_down(){
+	if (position_y - .0025 < -6.5f)
+		return true;
+	else return false; // set collision if needed
+}
+
+
+bool P1_Entity::collide_up(){
+	if (position_y - .0025 > 6.5f){
+		collision = true;
+		return true;
+	}
+	else {
+		collision = false;
+		return false;
+	}
+}
+
+
 void P1_Entity::check_collisions(){
-	if (position_x >= 2 || position_x <= -2 || position_y >= 2 || position_y <= -2)
+	if (position_x >= 2.0f || position_x <= -2.0f || position_y >= 2.0f || position_y <= -2.0f)
 		collision = 0;
 	else collision = 1; // !collision
 }
@@ -29,20 +58,138 @@ void P1_Entity::update(){
 	const Uint8 *keys = SDL_GetKeyboardState(NULL);
 	if (keys[SDL_SCANCODE_A])
 	{
-		position_x -= .00025f * collision;
+		if (!collide_left())
+			position_x -= .0025f;
 	}
 	if (keys[SDL_SCANCODE_D])
 	{
-		position_x += .00025f * collision;
+		if (!collide_right())
+			position_x += .0025f;
 	}
 	if (keys[SDL_SCANCODE_S])
 	{
-		position_y -= .00025f * collision;
+		if (!collide_down())
+			position_y -= .0025f;
 	}
 	if (keys[SDL_SCANCODE_W])
 	{
-		position_y += .00025f * collision;
+		if (!collide_up())
+			position_y += .0025f;
 	}
 }
 
 
+
+// P2 stuff ////////////////////////////////////////////////////////////////////////
+
+P2_Entity::P2_Entity() :active(false), was_active(false){}
+
+bool P2_Entity::collide_left(){
+	if (position_x - .0025 < -8.0f)
+		return true;
+	else return false; // set collision if needed
+}
+
+
+bool P2_Entity::collide_right(){
+	if (position_x - .0025 > 8.0f)
+		return true;
+	else return false; // set collision if needed
+}
+
+bool P2_Entity::collide_down(){
+	if (position_y - .0025 < -6.5f)
+		return true;
+	else return false; // set collision if needed
+}
+
+
+bool P2_Entity::collide_up(){
+	if (position_y - .0025 > 6.5f){
+		collision = true;
+		return true;
+	}
+	else {
+		collision = false;
+		return false;
+	}
+}
+
+
+void P2_Entity::check_collisions(){
+	if (position_x >= 2.0f || position_x <= -2.0f || position_y >= 2.0f || position_y <= -2.0f)
+		collision = 0;
+	else collision = 1; // !collision
+}
+
+
+void P2_Entity::update(){
+	const Uint8 *keys = SDL_GetKeyboardState(NULL);
+	if (keys[SDL_SCANCODE_J])
+	{
+		if (!collide_left())
+			position_x -= .0025f;
+	}
+	if (keys[SDL_SCANCODE_L])
+	{
+		if (!collide_right())
+			position_x += .0025f;
+	}
+	if (keys[SDL_SCANCODE_K])
+	{
+		if (!collide_down())
+			position_y -= .0025f;
+	}
+	if (keys[SDL_SCANCODE_I])
+	{
+		if (!collide_up())
+			position_y += .0025f;
+	}
+}
+
+
+//BULLET /////////////////////////////////////////////////////////////////////////////////
+
+void Bullet_Entity::update(){
+	position_x += .00025;
+}
+
+bool Bullet_Entity::check_collisions(float player_pos_x, float player_pos_y){
+	if (position_x - .5 > player_pos_x + .5)
+		return false;
+	if (position_x + .5 < player_pos_x - .5)
+		return false;
+	if (position_y - .5 > player_pos_y + .5)
+		return false;
+	if (position_y + .5 < player_pos_y - .5)
+		return false;
+
+	return true;
+}
+
+void Bullet_Entity::initialize_location(){
+
+	srand(time(NULL));
+	int x_or_y = rand() % 2;
+	int side = rand() % 2;
+
+	if (x_or_y == 0) // start on either left or right wall
+	{
+		if (side == 0)	// left wall
+			position_x = -12.0f;
+		else			// right wall
+			position_x = 12.0f;
+
+		position_y = -8.0f + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (8 - (-8.0f)))); // to be tested
+	}
+
+	else // start on either top or bottom wall
+	{
+		if (side == 0)	// bottom wall
+			position_y = -8.0f;
+		else            // top wall
+			position_y = 8.0f;
+
+		position_x = -12.0f + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (12 - (-12.0f)))); // to be tested
+	}
+}

@@ -48,11 +48,10 @@ void DrawText(int fontTexture, std::string text, float size, float spacing, Shad
 Game_Entity::Game_Entity() : done(false), state(main_menu) {
 	float texCoords[] = { 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f };
 	float vert[] = { -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, -1.0f, 1.0f, 1.0f };
-}
 
-//void Game_Entity::init(){
-//	
-//}
+	memcpy(this->vert, vert, sizeof(float) * 12);
+	memcpy(this->texCoords, texCoords, sizeof(float) * 12);
+}
 
 
 void Game_Entity::process_events(){
@@ -80,6 +79,12 @@ void Game_Entity::update(){
 
 	if (player1.active == true)
 		player1.update();
+	if (player2.active == true)
+		player2.update();
+
+
+	if (bullet.check_collisions(player1.position_x, player1.position_y))
+		done = true;
 
 	switch (state)
 	{
@@ -87,24 +92,43 @@ void Game_Entity::update(){
 		if (keys[SDL_SCANCODE_SPACE])
 		{
 			state = directions;
+			player1.position_x = -5.0f;
+			player1.position_y = 0.0f;
+			player2.position_x = 5.0f;
+			player2.position_y = 0.0f;
 		}
-		renderP1();
+		player1.active = false;
+		player2.active = false;
+		player2.was_active = false;
+		score = 0;
 		render_main_menu();
 		break;
 	case directions:
 		render_directions();
-		if (keys[SDL_SCANCODE_A])
+		if (keys[SDL_SCANCODE_W])
 		{
 			state = play;
 			player1.active = true;
 		}
+		else if (keys[SDL_SCANCODE_I])
+		{
+			state = play;
+			player1.active = true;
+			player2.active = true;
+			player2.was_active = true;
+		}
+		
 		break;
 	case play:
 		render_play();
+		bullet.update(); /////////////////////////////////////////
+
 		if (keys[SDL_SCANCODE_ESCAPE])
 		{
 			state = pause;
 			player1.active = false;
+			player2.active = false;
+			
 		}
 		break;
 	case pause:
@@ -113,6 +137,8 @@ void Game_Entity::update(){
 		{
 			state = play;
 			player1.active = true;
+			if (player2.was_active == true)
+				player2.active = true;
 		}
 		else if (keys[SDL_SCANCODE_BACKSPACE])
 		{
@@ -122,15 +148,17 @@ void Game_Entity::update(){
 	case game_over:
 		render_game_over();
 		player1.active = false;
+		player2.active = false;
+		player2.was_active = false;
 		break;
 	}
 }
 
 
 void Game_Entity::render_main_menu(){
-	program->setModelMatrix(modelMatrix);
 	modelMatrix.identity();
 	modelMatrix.Translate(-.25, 1.5, 0);
+	program->setModelMatrix(modelMatrix);
 	DrawText(fontID, "Title Screen", .5, -.25, program);
 	
 	//write title screen
@@ -139,9 +167,9 @@ void Game_Entity::render_main_menu(){
 
 
 void Game_Entity::render_directions(){
-	program->setModelMatrix(modelMatrix);
 	modelMatrix.identity();
-	modelMatrix.Translate(-.25, 1.5, 0);
+	modelMatrix.Translate(-2.25, 1.5, 0);
+	program->setModelMatrix(modelMatrix);
 	DrawText(fontID, "Directions", .5, -.25, program);
 
 	//write directions here
@@ -152,11 +180,22 @@ void Game_Entity::render_directions(){
 
 void Game_Entity::render_play(){
 
-	/*program->setModelMatrix(modelMatrix);
+	score_ticks++;
+	if (score_ticks == 1000){
+		score_ticks = 0;
+		score += 1;
+	}
 	modelMatrix.identity();
 	modelMatrix.Translate(-.25, 1.5, 0);
-	DrawText(fontID, "Play", .5, -.25, program);*/
+	program->setModelMatrix(modelMatrix);
+	DrawText(fontID, "Score: " + std::to_string(score), .5, -.25, program);
+	
 	renderP1();
+	if (player2.active == true)
+		renderP2();
+
+	renderBullets();
+	
 
 }
 
@@ -183,16 +222,59 @@ void Game_Entity::renderP1(){
 	glBindTexture(GL_TEXTURE_2D, player1.textureID);
 	glEnableVertexAttribArray(program->positionAttribute);
 	glEnableVertexAttribArray(program->texCoordAttribute);
+
+	modelMatrix.identity();
+	modelMatrix.Scale(.25, .25, 1.0);
+	modelMatrix.Translate(player1.position_x, player1.position_y, 0.0f);
+
 	program->setModelMatrix(modelMatrix);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
-	modelMatrix.identity();
-	//modelMatrix.Scale(.25, .25, 1.0);
-	modelMatrix.Translate(player1.position_x, player1.position_y, 0.0f);
+
 	glDisableVertexAttribArray(program->positionAttribute);
 	glDisableVertexAttribArray(program->texCoordAttribute);
 }
 
+void Game_Entity::renderP2(){
 
+	glUseProgram(program->programID);
+	glVertexAttribPointer(program->positionAttribute, 2, GL_FLOAT, false, 0, vert);
+	glVertexAttribPointer(program->texCoordAttribute, 2, GL_FLOAT, false, 0, texCoords);
+	glBindTexture(GL_TEXTURE_2D, player2.textureID);
+
+	glEnableVertexAttribArray(program->positionAttribute);
+	glEnableVertexAttribArray(program->texCoordAttribute);
+
+	modelMatrix.identity();
+	modelMatrix.Scale(.25, .25, 1.0);
+	modelMatrix.Translate(player2.position_x, player2.position_y, 0.0f);
+
+	program->setModelMatrix(modelMatrix);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	glDisableVertexAttribArray(program->positionAttribute);
+	glDisableVertexAttribArray(program->texCoordAttribute);
+}
+
+void Game_Entity::renderBullets(){
+	glUseProgram(program->programID);
+	glVertexAttribPointer(program->positionAttribute, 2, GL_FLOAT, false, 0, vert);
+	glVertexAttribPointer(program->texCoordAttribute, 2, GL_FLOAT, false, 0, texCoords);
+	glBindTexture(GL_TEXTURE_2D, player2.textureID);
+
+	glEnableVertexAttribArray(program->positionAttribute);
+	glEnableVertexAttribArray(program->texCoordAttribute);
+
+	modelMatrix.identity();
+	modelMatrix.Scale(.25, .25, 1.0);
+	modelMatrix.Translate(bullet.position_x, bullet.position_y, 0.0f);
+
+	program->setModelMatrix(modelMatrix);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	glDisableVertexAttribArray(program->positionAttribute);
+	glDisableVertexAttribArray(program->texCoordAttribute);
+
+}
 
 void Game_Entity::run(){
 	SDL_Init(SDL_INIT_VIDEO);
@@ -205,7 +287,11 @@ void Game_Entity::run(){
 	glViewport(0, 0, 640, 360);
 	projectionMatrix.setOrthoProjection(-3.55f, 3.55f, -2.0f, 2.0f, -1.0f, 1.0f);
 	fontID = LoadTexture("font1.png");
-	player1.textureID = LoadTexture("Megaman.png");
+	player2.textureID = LoadTexture("fire2.png");
+	player1.textureID = LoadTexture("Megaman.png"); 
+	bullet.textureID = LoadTexture("fire.png");
+
+	score_ticks = 0;
 
 	program = new ShaderProgram(RESOURCE_FOLDER"vertex_textured.glsl", RESOURCE_FOLDER"fragment_textured.glsl");
 	while (!done){

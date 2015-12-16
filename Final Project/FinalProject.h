@@ -1,6 +1,7 @@
 #include "Entites.h"
 
 
+
 #ifdef _WINDOWS
 #define RESOURCE_FOLDER ""
 #else
@@ -26,14 +27,19 @@ public:
 
 	float texCoords[12]; //testing
 	float vert[12];
-	
+
+	int score_ticks;
+	int score;
+
 	P1_Entity player1;
+	P2_Entity player2;
+	Bullet_Entity bullet;
+
+	std::vector<Bullet_Entity> bullets;
 	
 	Game_Entity();
 	void process_events(); //for SDL events
-	//void init();
 	void update();
-	//void render();
 	void render_main_menu();
 	void render_directions();
 	void render_play();
@@ -41,5 +47,8 @@ public:
 	void render_game_over();
 
 	void renderP1();
+	void renderP2();
+	void renderBullets();
 	void run();
+
 };
