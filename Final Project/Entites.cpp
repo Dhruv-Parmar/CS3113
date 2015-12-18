@@ -151,7 +151,13 @@ void P2_Entity::update(){
 //BULLET /////////////////////////////////////////////////////////////////////////////////
 
 void Bullet_Entity::update(){
-	position_x += .00025;
+	if (direction_x == 0 && direction_y == 0)
+		direction_x = 1;
+	position_x += speed * direction_x;
+	position_y += speed * direction_y;
+	
+	if (position_x > 15.0f || position_x < -15.0f || position_y < -10.0f || position_y > 10.0f)
+		initialize();
 }
 
 bool Bullet_Entity::check_collisions(float player_pos_x, float player_pos_y){
@@ -167,29 +173,31 @@ bool Bullet_Entity::check_collisions(float player_pos_x, float player_pos_y){
 	return true;
 }
 
-void Bullet_Entity::initialize_location(){
-
-	srand(time(NULL));
+void Bullet_Entity::initialize(){
+	//srand(time(NULL));
+	speed = ((float(rand()) / float(RAND_MAX)) * (0.0035f + 0.002f)) - 0.002f;
+	direction_x = (rand() % 2) - 1; // what if 0?
+	direction_y = (rand() % 2) - 1;
 	int x_or_y = rand() % 2;
 	int side = rand() % 2;
 
 	if (x_or_y == 0) // start on either left or right wall
 	{
 		if (side == 0)	// left wall
-			position_x = -12.0f;
+			position_x = -15.0f;
 		else			// right wall
-			position_x = 12.0f;
+			position_x = 15.0f;
 
-		position_y = -8.0f + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (8 - (-8.0f)))); // to be tested
+		position_y = ((float(rand()) / float(RAND_MAX)) * (20.0f))-10.0f;
 	}
 
 	else // start on either top or bottom wall
 	{
 		if (side == 0)	// bottom wall
-			position_y = -8.0f;
+			position_y = -10.0f;
 		else            // top wall
-			position_y = 8.0f;
+			position_y = 10.0f;
 
-		position_x = -12.0f + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (12 - (-12.0f)))); // to be tested
+		position_x = (float(rand()) / float(RAND_MAX)) * (30.0f) -15.0f;
 	}
 }

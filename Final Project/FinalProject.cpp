@@ -82,9 +82,7 @@ void Game_Entity::update(){
 	if (player2.active == true)
 		player2.update();
 
-
-	if (bullet.check_collisions(player1.position_x, player1.position_y))
-		done = true;
+	
 
 	switch (state)
 	{
@@ -97,6 +95,10 @@ void Game_Entity::update(){
 			player2.position_x = 5.0f;
 			player2.position_y = 0.0f;
 		}
+
+		for (int i = 0; i < bullets.size(); i++)
+			bullets[i].initialize();
+
 		player1.active = false;
 		player2.active = false;
 		player2.was_active = false;
@@ -121,8 +123,11 @@ void Game_Entity::update(){
 		break;
 	case play:
 		render_play();
-		bullet.update(); /////////////////////////////////////////
-
+		for (int i = 0; i < bullets.size(); i++)
+			bullets[i].update();
+		for (int i = 0; i < bullets.size(); i++)
+			if (bullets[i].check_collisions(player1.position_x, player1.position_y))
+				state = game_over;
 		if (keys[SDL_SCANCODE_ESCAPE])
 		{
 			state = pause;
@@ -146,6 +151,12 @@ void Game_Entity::update(){
 		}
 		break;
 	case game_over:
+		render_play();
+
+		if (keys[SDL_SCANCODE_RETURN])
+		{
+			state = main_menu;
+		}
 		render_game_over();
 		player1.active = false;
 		player2.active = false;
@@ -180,7 +191,8 @@ void Game_Entity::render_directions(){
 
 void Game_Entity::render_play(){
 
-	score_ticks++;
+	if (state != game_over)
+		score_ticks++;
 	if (score_ticks == 1000){
 		score_ticks = 0;
 		score += 1;
@@ -208,10 +220,10 @@ void Game_Entity::render_pause(){
 }
 
 void Game_Entity::render_game_over(){
-	program->setModelMatrix(modelMatrix);
 	modelMatrix.identity();
 	modelMatrix.Translate(-.25, 1.5, 0);
 	DrawText(fontID, "Game Over", .5, -.25, program);
+	program->setModelMatrix(modelMatrix);
 }
 
 
@@ -256,23 +268,26 @@ void Game_Entity::renderP2(){
 }
 
 void Game_Entity::renderBullets(){
-	glUseProgram(program->programID);
-	glVertexAttribPointer(program->positionAttribute, 2, GL_FLOAT, false, 0, vert);
-	glVertexAttribPointer(program->texCoordAttribute, 2, GL_FLOAT, false, 0, texCoords);
-	glBindTexture(GL_TEXTURE_2D, player2.textureID);
+	for (int i = 0; i < bullets.size(); i++)
+	{
+		glUseProgram(program->programID);
+		glVertexAttribPointer(program->positionAttribute, 2, GL_FLOAT, false, 0, vert);
+		glVertexAttribPointer(program->texCoordAttribute, 2, GL_FLOAT, false, 0, texCoords);
+		glBindTexture(GL_TEXTURE_2D, bullets[i].textureID);
 
-	glEnableVertexAttribArray(program->positionAttribute);
-	glEnableVertexAttribArray(program->texCoordAttribute);
+		glEnableVertexAttribArray(program->positionAttribute);
+		glEnableVertexAttribArray(program->texCoordAttribute);
 
-	modelMatrix.identity();
-	modelMatrix.Scale(.25, .25, 1.0);
-	modelMatrix.Translate(bullet.position_x, bullet.position_y, 0.0f);
+		modelMatrix.identity();
+		modelMatrix.Scale(.25, .25, 1.0);
+		modelMatrix.Translate(bullets[i].position_x, bullets[i].position_y, 0.0f);
 
-	program->setModelMatrix(modelMatrix);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+		program->setModelMatrix(modelMatrix);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
 
-	glDisableVertexAttribArray(program->positionAttribute);
-	glDisableVertexAttribArray(program->texCoordAttribute);
+		glDisableVertexAttribArray(program->positionAttribute);
+		glDisableVertexAttribArray(program->texCoordAttribute);
+	}
 
 }
 
@@ -289,7 +304,12 @@ void Game_Entity::run(){
 	fontID = LoadTexture("font1.png");
 	player2.textureID = LoadTexture("fire2.png");
 	player1.textureID = LoadTexture("Megaman.png"); 
-	bullet.textureID = LoadTexture("fire.png");
+	for (int i = 0; i < 50; i++){
+		Bullet_Entity bullet;
+		bullet.textureID = LoadTexture("fire.png");
+		//bullet.initialize();
+		bullets.push_back(bullet);
+	}
 
 	score_ticks = 0;
 

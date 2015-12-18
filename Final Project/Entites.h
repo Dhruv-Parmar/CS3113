@@ -84,11 +84,14 @@ public:
 	GLuint textureID;
 	float position_x;
 	float position_y;
+	int direction_x;
+	int direction_y;
 	float speed;
 	bool active = false;
-	bool alive = false;
+	//bool alive = false;
 
 	void update(); // check for bullet death in here
 	bool check_collisions(float player_pos_x, float player_pos_y);
-	void initialize_location();
+	void initialize();
 };
+

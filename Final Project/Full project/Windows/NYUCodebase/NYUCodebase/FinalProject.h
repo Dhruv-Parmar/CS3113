@@ -31,9 +31,10 @@ public:
 	int score_ticks;
 	int score;
 
+
 	P1_Entity player1;
 	P2_Entity player2;
-	Bullet_Entity bullet;
+	//Bullet_Entity bullet;
 
 	std::vector<Bullet_Entity> bullets;
 	
