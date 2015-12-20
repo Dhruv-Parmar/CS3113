@@ -79,9 +79,11 @@ void Game_Entity::update(){
 	switch (state)
 	{
 	case main_menu:
+		
 		if (keys[SDL_SCANCODE_SPACE])
 		{
 			state = directions;
+			Mix_PlayChannel(-1, slice, 0);
 			player1.position_x = -5.0f;
 			player1.position_y = 0.0f;
 			player2.position_x = 5.0f;
@@ -102,11 +104,13 @@ void Game_Entity::update(){
 		if (keys[SDL_SCANCODE_W])
 		{
 			state = play;
+			Mix_PlayChannel(-1, slice, 0);
 			player1.active = true;
 		}
 		else if (keys[SDL_SCANCODE_I])
 		{
 			state = play;
+			Mix_PlayChannel(-1, slice, 0);
 			player1.active = true;
 			player2.active = true;
 			player2.was_active = true;
@@ -121,16 +125,19 @@ void Game_Entity::update(){
 			if (bullets[i].check_collisions(player1.position_x, player1.position_y)){
 				player1.active = false;
 				state = game_over;
+				Mix_PlayChannel(-1, death, 0);
 			}
 			if (player2.active)
 				if (bullets[i].check_collisions(player2.position_x, player2.position_y)){
 					player2.active = false;
 					state = game_over;
+					Mix_PlayChannel(-1, death, 0);
 				}
 		}
 		if (keys[SDL_SCANCODE_ESCAPE])
 		{
 			state = pause;
+			Mix_PlayChannel(-1, pause_sound, 0);
 			player1.active = false;
 			player2.active = false;
 			
@@ -141,6 +148,7 @@ void Game_Entity::update(){
 		if (keys[SDL_SCANCODE_RETURN])
 		{
 			state = play;
+			Mix_PlayChannel(-1, slice, 0);
 			player1.active = true;
 			if (player2.was_active == true)
 				player2.active = true;
@@ -148,11 +156,13 @@ void Game_Entity::update(){
 		else if (keys[SDL_SCANCODE_BACKSPACE])
 		{
 			state = main_menu;
+			Mix_PlayChannel(-1, slice, 0);
 		}
 		break;
 	case game_over:
 		if (keys[SDL_SCANCODE_RETURN])
 		{
+			Mix_PlayChannel(-1, slice, 0);
 			state = main_menu;
 		}
 		render_game_over();
@@ -403,9 +413,14 @@ void Game_Entity::run(){
 	images.push_back("knife2.png");
 	images.push_back("spoon.png");
 	images.push_back("fork.png");
-
+	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
+	slice = Mix_LoadWAV("slice.wav");
+	death = Mix_LoadWAV("explosion2.wav");
+	pause_sound = Mix_LoadWAV("pause.wav");
+	music = Mix_LoadMUS("summertime.mp3");
+	Mix_PlayMusic(music, -1);
 	int temp;
-	for (int i = 0; i < 30; i++){
+	for (int i = 0; i < 40; i++){
 
 		temp = rand() % images.size();
 		Bullet_Entity bullet;

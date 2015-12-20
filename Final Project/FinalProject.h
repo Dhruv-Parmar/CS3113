@@ -24,7 +24,10 @@ public:
 	states state;
 	const Uint8 *keys;
 	unsigned int fontID;
-
+	Mix_Chunk *death;
+	Mix_Chunk *slice;
+	Mix_Chunk *pause_sound;
+	Mix_Music *music;
 	int background_tex_id;
 
 	float texCoords[12]; //testing

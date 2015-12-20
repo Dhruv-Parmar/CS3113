@@ -98,25 +98,26 @@ bool P2_Entity::collide_up(){
 
 void P2_Entity::update(){
 	const Uint8 *keys = SDL_GetKeyboardState(NULL);
+	float distance = .003f;
 	if (keys[SDL_SCANCODE_J])
 	{
 		if (!collide_left())
-			position_x -= .0025f;
+			position_x -= distance;
 	}
 	if (keys[SDL_SCANCODE_L])
 	{
 		if (!collide_right())
-			position_x += .0025f;
+			position_x += distance;
 	}
 	if (keys[SDL_SCANCODE_K])
 	{
 		if (!collide_down())
-			position_y -= .0025f;
+			position_y -= distance;
 	}
 	if (keys[SDL_SCANCODE_I])
 	{
 		if (!collide_up())
-			position_y += .0025f;
+			position_y += distance;
 	}
 }
 
@@ -134,13 +135,13 @@ void Bullet_Entity::update(){
 }
 
 bool Bullet_Entity::check_collisions(float player_pos_x, float player_pos_y){
-	if (position_x - .5 > player_pos_x + .5)
+	if (position_x - .65 > player_pos_x + .65)
 		return false;
-	if (position_x + .5 < player_pos_x - .5)
+	if (position_x + .65 < player_pos_x - .65)
 		return false;
-	if (position_y - .5 > player_pos_y + .5)
+	if (position_y - .65 > player_pos_y + .65)
 		return false;
-	if (position_y + .5 < player_pos_y - .5)
+	if (position_y + .65 < player_pos_y - .65)
 		return false;
 
 	return true;
@@ -159,7 +160,7 @@ void Bullet_Entity::initialize(){
 		rand_rotate_direction = 1;
 	else rand_rotate_direction = -1;
 	rand_rotate_value = (float(rand()) / float(RAND_MAX));
-	speed = ((float(rand()) / float(RAND_MAX)) * (0.0035f + 0.0025f)) - 0.0025f;
+	speed = ((float(rand()) / float(RAND_MAX)) * (0.005f + 0.0025f)) - 0.0025f;
 	direction_x = (rand() % 2) - 1; // what if 0?
 	if (direction_x == 0)
 		direction_x = 1;
