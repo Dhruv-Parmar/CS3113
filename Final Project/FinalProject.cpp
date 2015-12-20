@@ -1,13 +1,5 @@
 #include "FinalProject.h"
 
-// To do:   P2 Entity (derive it from p1)
-//			bullets entity
-//			sprites
-//			background + music
-//			"tweening"
-// still have time: particle effects, laser, blocks, konami code
-
-
 void DrawText(int fontTexture, std::string text, float size, float spacing, ShaderProgram *program) {
 	float texture_size = 1.0 / 16.0f;
 	std::vector<float> vertexData;
@@ -82,7 +74,7 @@ void Game_Entity::update(){
 	if (player2.active == true)
 		player2.update();
 
-	
+	renderBackground();
 
 	switch (state)
 	{
@@ -125,9 +117,17 @@ void Game_Entity::update(){
 		render_play();
 		for (int i = 0; i < bullets.size(); i++)
 			bullets[i].update();
-		for (int i = 0; i < bullets.size(); i++)
-			if (bullets[i].check_collisions(player1.position_x, player1.position_y))
+		for (int i = 0; i < bullets.size(); i++){
+			if (bullets[i].check_collisions(player1.position_x, player1.position_y)){
+				player1.active = false;
 				state = game_over;
+			}
+			if (player2.active)
+				if (bullets[i].check_collisions(player2.position_x, player2.position_y)){
+					player2.active = false;
+					state = game_over;
+				}
+		}
 		if (keys[SDL_SCANCODE_ESCAPE])
 		{
 			state = pause;
@@ -151,16 +151,11 @@ void Game_Entity::update(){
 		}
 		break;
 	case game_over:
-		render_play();
-
 		if (keys[SDL_SCANCODE_RETURN])
 		{
 			state = main_menu;
 		}
 		render_game_over();
-		player1.active = false;
-		player2.active = false;
-		player2.was_active = false;
 		break;
 	}
 }
@@ -168,62 +163,134 @@ void Game_Entity::update(){
 
 void Game_Entity::render_main_menu(){
 	modelMatrix.identity();
-	modelMatrix.Translate(-.25, 1.5, 0);
+	modelMatrix.Translate(-.5, 1.5, 0);
 	program->setModelMatrix(modelMatrix);
-	DrawText(fontID, "Title Screen", .5, -.25, program);
-	
-	//write title screen
-	//space for directions
+	DrawText(fontID, "Don't", .4, -.1, program);
+
+	modelMatrix.identity();
+	modelMatrix.Translate(-.25 , .95, 0);
+	program->setModelMatrix(modelMatrix);
+	DrawText(fontID, "Get", .5, -.1, program);
+
+	modelMatrix.identity();
+	modelMatrix.Translate(-1.4, .3, 0);
+	program->setModelMatrix(modelMatrix);
+	DrawText(fontID, "CHOPPED!", .6, -.1, program);
+
+	modelMatrix.identity();
+	modelMatrix.Translate(-2, -1.5, 0);
+	program->setModelMatrix(modelMatrix);
+	DrawText(fontID, "Press Space to continue..", .2, 0, program);
 }
 
 
 void Game_Entity::render_directions(){
 	modelMatrix.identity();
-	modelMatrix.Translate(-2.25, 1.5, 0);
+	modelMatrix.Translate(-1.5, 1.5, 0);
 	program->setModelMatrix(modelMatrix);
-	DrawText(fontID, "Directions", .5, -.25, program);
+	DrawText(fontID, "Directions", .37, 0, program);
 
-	//write directions here
-	//w for 1 player I for 2 player
+	modelMatrix.identity();
+	modelMatrix.Translate(-2.25, .8, 0);
+	program->setModelMatrix(modelMatrix);
+	DrawText(fontID, "Player 1: W, A, S, and D to move", .2, -.05, program);
+
+	modelMatrix.identity();
+	modelMatrix.Translate(-2.25, .3, 0);
+	program->setModelMatrix(modelMatrix);
+	DrawText(fontID, "Player 2: I, J, K, and L to move", .2, -.05, program);
+
+	modelMatrix.identity();
+	modelMatrix.Translate(-3.25, -1.5, 0);
+	program->setModelMatrix(modelMatrix);
+	DrawText(fontID, "Press W for single player or I for two player", .2, -.05, program);
 
 }
 
 
 void Game_Entity::render_play(){
-
-	if (state != game_over)
-		score_ticks++;
-	if (score_ticks == 1000){
-		score_ticks = 0;
-		score += 1;
-	}
-	modelMatrix.identity();
-	modelMatrix.Translate(-.25, 1.5, 0);
-	program->setModelMatrix(modelMatrix);
-	DrawText(fontID, "Score: " + std::to_string(score), .5, -.25, program);
-	
 	renderP1();
 	if (player2.active == true)
 		renderP2();
 
 	renderBullets();
-	
 
+	score_ticks++;
+	if (score_ticks == 1000){
+		score_ticks = 0;
+		score += 1;
+	}
+	modelMatrix.identity();
+	modelMatrix.Translate(2, 1.8, 0);
+	program->setModelMatrix(modelMatrix);
+	DrawText(fontID, "Score: " + std::to_string(score), .15, 0, program);
 }
 
 
 void Game_Entity::render_pause(){
-	program->setModelMatrix(modelMatrix);
 	modelMatrix.identity();
-	modelMatrix.Translate(-.25, 1.5, 0);
-	DrawText(fontID, "Pause", .5, -.25, program);
+	modelMatrix.Translate(-1, 1.5, 0);
+	program->setModelMatrix(modelMatrix);
+	DrawText(fontID, "Pause", .5, 0, program);
+
+	modelMatrix.identity();
+	modelMatrix.Translate(-2.9, .3, 0);
+	program->setModelMatrix(modelMatrix);
+	DrawText(fontID, "Press ENTER to continue playing", .2, 0, program);
+
+	modelMatrix.identity();
+	modelMatrix.Translate(-2.9, -.8, 0);
+	program->setModelMatrix(modelMatrix);
+	DrawText(fontID, "Press BACKSPACE to return to the", .2, 0, program);
+
+	modelMatrix.identity();
+	modelMatrix.Translate(-1, -1.1, 0);
+	program->setModelMatrix(modelMatrix);
+	DrawText(fontID, "main menu", .2, 0, program);
 }
+
 
 void Game_Entity::render_game_over(){
 	modelMatrix.identity();
-	modelMatrix.Translate(-.25, 1.5, 0);
-	DrawText(fontID, "Game Over", .5, -.25, program);
+	modelMatrix.Translate(-1.75, 1.5, 0);
 	program->setModelMatrix(modelMatrix);
+	DrawText(fontID, "Game Over", .5, 0, program);
+
+	if (player2.was_active){
+		if (player1.active){
+			modelMatrix.identity();
+			modelMatrix.Translate(-1.5, .7, 0);
+			program->setModelMatrix(modelMatrix);
+			DrawText(fontID, "Player 1 Wins!", .25, 0, program);
+		}
+		else {
+			modelMatrix.identity();
+			modelMatrix.Translate(-1.5, .7, 0);
+			program->setModelMatrix(modelMatrix);
+			DrawText(fontID, "Player 2 Wins!", .25, 0, program);
+		}
+
+	}
+
+	if (score >= high_score){
+		modelMatrix.identity();
+		modelMatrix.Translate(-2, 0, 0);
+		program->setModelMatrix(modelMatrix);
+		DrawText(fontID, "New High Score!", .35, 0, program);
+
+		high_score = score;
+	}
+
+	modelMatrix.identity();
+	modelMatrix.Translate(-.75, -1, 0);
+	program->setModelMatrix(modelMatrix);
+	DrawText(fontID, "Score: " + std::to_string(score), .25, 0, program);
+
+	modelMatrix.identity();
+	modelMatrix.Translate(-1.5, -1.8, 0);
+	program->setModelMatrix(modelMatrix);
+	DrawText(fontID, "Press ENTER to continue..", .15, 0, program);
+	
 }
 
 
@@ -278,10 +345,17 @@ void Game_Entity::renderBullets(){
 		glEnableVertexAttribArray(program->positionAttribute);
 		glEnableVertexAttribArray(program->texCoordAttribute);
 
-		modelMatrix.identity();
-		modelMatrix.Scale(.25, .25, 1.0);
-		modelMatrix.Translate(bullets[i].position_x, bullets[i].position_y, 0.0f);
+		float ticks = (float)SDL_GetTicks() / 1000.0f;
+		float elapsed = ticks - bullets[i].lastframeticks;
+		bullets[i].angle += elapsed * 3.14 * bullets[i].rand_rotate_value * bullets[i].rand_rotate_direction;
+		bullets[i].lastframeticks = ticks;
 
+		modelMatrix.identity();
+		//modelMatrix.Scale(bullets[i].scale * .25, bullets[i].scale * .25, 1.0);
+		modelMatrix.Scale(.25, .25, 1.0);
+
+		modelMatrix.Translate(bullets[i].position_x, bullets[i].position_y, 0.0f);
+		modelMatrix.Rotate(bullets[i].angle);
 		program->setModelMatrix(modelMatrix);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
@@ -290,6 +364,24 @@ void Game_Entity::renderBullets(){
 	}
 
 }
+
+void Game_Entity::renderBackground(){
+	glUseProgram(program->programID);
+	glVertexAttribPointer(program->positionAttribute, 2, GL_FLOAT, false, 0, vert);
+	glVertexAttribPointer(program->texCoordAttribute, 2, GL_FLOAT, false, 0, texCoords);
+	glBindTexture(GL_TEXTURE_2D, background_tex_id);
+	glEnableVertexAttribArray(program->positionAttribute);
+	glEnableVertexAttribArray(program->texCoordAttribute);
+
+	modelMatrix.identity();
+	modelMatrix.Scale(4.2f, 4.2f, 1.0f);
+	program->setModelMatrix(modelMatrix);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	glDisableVertexAttribArray(program->positionAttribute);
+	glDisableVertexAttribArray(program->texCoordAttribute);
+}
+
 
 void Game_Entity::run(){
 	SDL_Init(SDL_INIT_VIDEO);
@@ -301,12 +393,23 @@ void Game_Entity::run(){
 #endif
 	glViewport(0, 0, 640, 360);
 	projectionMatrix.setOrthoProjection(-3.55f, 3.55f, -2.0f, 2.0f, -1.0f, 1.0f);
-	fontID = LoadTexture("font1.png");
-	player2.textureID = LoadTexture("fire2.png");
-	player1.textureID = LoadTexture("Megaman.png"); 
-	for (int i = 0; i < 50; i++){
+	fontID = LoadTexture("font2.png");
+	background_tex_id = LoadTexture("Background.png");
+	player2.textureID = LoadTexture("pumpkin.png");
+	player1.textureID = LoadTexture("tomato.png"); 
+	std::vector<std::string> images;
+	images.push_back("knife.png");
+	images.push_back("spatula.png");
+	images.push_back("knife2.png");
+	images.push_back("spoon.png");
+	images.push_back("fork.png");
+
+	int temp;
+	for (int i = 0; i < 30; i++){
+
+		temp = rand() % images.size();
 		Bullet_Entity bullet;
-		bullet.textureID = LoadTexture("fire.png");
+		bullet.textureID = LoadTexture(images[temp].c_str());
 		//bullet.initialize();
 		bullets.push_back(bullet);
 	}

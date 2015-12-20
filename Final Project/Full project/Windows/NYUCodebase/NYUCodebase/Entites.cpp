@@ -16,65 +16,52 @@ GLuint LoadTexture(const char *image_path){
 P1_Entity::P1_Entity():active(false){}
 
 bool P1_Entity::collide_left(){
-	if (position_x - .0025 < -8.0f)
+	if (position_x - .0025 < -13.5f)
 		return true;
 	else return false; // set collision if needed
 }
 
-
 bool P1_Entity::collide_right(){
-	if (position_x - .0025 > 8.0f)
+	if (position_x - .0025 > 13.5f)
 		return true;
 	else return false; // set collision if needed
 }
 
 bool P1_Entity::collide_down(){
-	if (position_y - .0025 < -6.5f)
+	if (position_y - .0025 < -7.15f)
 		return true;
 	else return false; // set collision if needed
 }
 
-
 bool P1_Entity::collide_up(){
-	if (position_y - .0025 > 6.5f){
-		collision = true;
+	if (position_y - .0025 > 7.15f)
 		return true;
-	}
-	else {
-		collision = false;
-		return false;
-	}
-}
-
-
-void P1_Entity::check_collisions(){
-	if (position_x >= 2.0f || position_x <= -2.0f || position_y >= 2.0f || position_y <= -2.0f)
-		collision = 0;
-	else collision = 1; // !collision
+	else return false;
 }
 
 
 void P1_Entity::update(){
 	const Uint8 *keys = SDL_GetKeyboardState(NULL);
+	float distance = .003f;
 	if (keys[SDL_SCANCODE_A])
 	{
 		if (!collide_left())
-			position_x -= .0025f;
+			position_x -= distance;
 	}
 	if (keys[SDL_SCANCODE_D])
 	{
 		if (!collide_right())
-			position_x += .0025f;
+			position_x += distance;
 	}
 	if (keys[SDL_SCANCODE_S])
 	{
 		if (!collide_down())
-			position_y -= .0025f;
+			position_y -= distance;
 	}
 	if (keys[SDL_SCANCODE_W])
 	{
 		if (!collide_up())
-			position_y += .0025f;
+			position_y += distance;
 	}
 }
 
@@ -85,41 +72,27 @@ void P1_Entity::update(){
 P2_Entity::P2_Entity() :active(false), was_active(false){}
 
 bool P2_Entity::collide_left(){
-	if (position_x - .0025 < -8.0f)
+	if (position_x - .0025 < -13.5f)
 		return true;
-	else return false; // set collision if needed
+	else return false; 
 }
 
-
 bool P2_Entity::collide_right(){
-	if (position_x - .0025 > 8.0f)
+	if (position_x - .0025 > 13.5f)
 		return true;
-	else return false; // set collision if needed
+	else return false; 
 }
 
 bool P2_Entity::collide_down(){
-	if (position_y - .0025 < -6.5f)
+	if (position_y - .0025 < -7.15f)
 		return true;
-	else return false; // set collision if needed
+	else return false; 
 }
-
 
 bool P2_Entity::collide_up(){
-	if (position_y - .0025 > 6.5f){
-		collision = true;
+	if (position_y - .0025 > 7.15f)
 		return true;
-	}
-	else {
-		collision = false;
-		return false;
-	}
-}
-
-
-void P2_Entity::check_collisions(){
-	if (position_x >= 2.0f || position_x <= -2.0f || position_y >= 2.0f || position_y <= -2.0f)
-		collision = 0;
-	else collision = 1; // !collision
+	else return false;
 }
 
 
@@ -153,8 +126,8 @@ void P2_Entity::update(){
 void Bullet_Entity::update(){
 	if (direction_x == 0 && direction_y == 0)
 		direction_x = 1;
-	position_x += speed * direction_x;
-	position_y += speed * direction_y;
+	position_x += speed * direction_x /*+ variation_x * variation_direction_x*/;
+	position_y += speed * direction_y /*+ variation_y * variation_direction_y*/;
 	
 	if (position_x > 15.0f || position_x < -15.0f || position_y < -10.0f || position_y > 10.0f)
 		initialize();
@@ -175,9 +148,24 @@ bool Bullet_Entity::check_collisions(float player_pos_x, float player_pos_y){
 
 void Bullet_Entity::initialize(){
 	//srand(time(NULL));
-	speed = ((float(rand()) / float(RAND_MAX)) * (0.0035f + 0.002f)) - 0.002f;
+	initial_rotate = false;
+	lastframeticks = 0;
+	/*variation_x = ((float(rand()) / float(RAND_MAX)) * (2.0f)) - 1.0f;
+	variation_y = ((float(rand()) / float(RAND_MAX)) * (2.0f)) - 1.0f;*/
+	//scale = ((float(rand()) / float(RAND_MAX)) * (2.0f + 1.0f)) - 1.0f;
+	angle = 0;
+	int temp = rand() % 2;
+	if (temp == 0)
+		rand_rotate_direction = 1;
+	else rand_rotate_direction = -1;
+	rand_rotate_value = (float(rand()) / float(RAND_MAX));
+	speed = ((float(rand()) / float(RAND_MAX)) * (0.0035f + 0.0025f)) - 0.0025f;
 	direction_x = (rand() % 2) - 1; // what if 0?
+	if (direction_x == 0)
+		direction_x = 1;
 	direction_y = (rand() % 2) - 1;
+	if (direction_y == 0)
+		direction_y = 1;
 	int x_or_y = rand() % 2;
 	int side = rand() % 2;
 
@@ -200,4 +188,12 @@ void Bullet_Entity::initialize(){
 
 		position_x = (float(rand()) / float(RAND_MAX)) * (30.0f) -15.0f;
 	}
+	/*temp = rand() % 2;
+	if (temp == 0)
+		variation_direction_x = 1;
+	else variation_direction_x = -1;
+	temp = rand() % 2;
+	if (temp == 0)
+		variation_direction_y = 1;
+	else variation_direction_y = -1;*/
 }

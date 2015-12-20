@@ -25,11 +25,14 @@ public:
 	const Uint8 *keys;
 	unsigned int fontID;
 
+	int background_tex_id;
+
 	float texCoords[12]; //testing
 	float vert[12];
 
 	int score_ticks;
 	int score;
+	int high_score = 0;
 
 
 	P1_Entity player1;
@@ -50,6 +53,7 @@ public:
 	void renderP1();
 	void renderP2();
 	void renderBullets();
+	void renderBackground();
 	void run();
 
 };
