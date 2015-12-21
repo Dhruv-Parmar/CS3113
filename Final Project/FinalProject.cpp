@@ -188,7 +188,7 @@ void Game_Entity::render_main_menu(){
 	DrawText(fontID, "CHOPPED!", .6, -.1, program);
 
 	modelMatrix.identity();
-	modelMatrix.Translate(-2, -1.5, 0);
+	modelMatrix.Translate(-2.25, -1.5, 0);
 	program->setModelMatrix(modelMatrix);
 	DrawText(fontID, "Press Space to continue..", .2, 0, program);
 }
@@ -211,9 +211,14 @@ void Game_Entity::render_directions(){
 	DrawText(fontID, "Player 2: I, J, K, and L to move", .2, -.05, program);
 
 	modelMatrix.identity();
-	modelMatrix.Translate(-3.25, -1.5, 0);
+	modelMatrix.Translate(-1.2, -.2, 0);
 	program->setModelMatrix(modelMatrix);
-	DrawText(fontID, "Press W for single player or I for two player", .2, -.05, program);
+	DrawText(fontID, "Press ESC to pause", .2, -.05, program);
+
+	modelMatrix.identity();
+	modelMatrix.Translate(-3.3, -1.5, 0);
+	program->setModelMatrix(modelMatrix);
+	DrawText(fontID, "Press W for single player or I for two players", .2, -.05, program);
 
 }
 
@@ -284,20 +289,38 @@ void Game_Entity::render_game_over(){
 
 	if (score >= high_score){
 		modelMatrix.identity();
-		modelMatrix.Translate(-2, 0, 0);
+		modelMatrix.Translate(-2.25, 0, 0);
 		program->setModelMatrix(modelMatrix);
 		DrawText(fontID, "New High Score!", .35, 0, program);
 
 		high_score = score;
+
+		modelMatrix.identity();
+		modelMatrix.Translate(-1.5, -.65, 0);
+		program->setModelMatrix(modelMatrix);
+		DrawText(fontID, "Your Score: " + std::to_string(score), .25, 0, program);
+
+		modelMatrix.identity();
+		modelMatrix.Translate(-1.5, -1, 0);
+		program->setModelMatrix(modelMatrix);
+		DrawText(fontID, "High Score: " + std::to_string(high_score), .25, 0, program);
+	}
+	else{
+		modelMatrix.identity();
+		modelMatrix.Translate(-1.5, .5, 0);
+		program->setModelMatrix(modelMatrix);
+		DrawText(fontID, "Your Score: " + std::to_string(score), .25, 0, program);
+
+		modelMatrix.identity();
+		modelMatrix.Translate(-1.5, -.5, 0);
+		program->setModelMatrix(modelMatrix);
+		DrawText(fontID, "High Score: " + std::to_string(high_score), .25, 0, program);
 	}
 
-	modelMatrix.identity();
-	modelMatrix.Translate(-.75, -1, 0);
-	program->setModelMatrix(modelMatrix);
-	DrawText(fontID, "Score: " + std::to_string(score), .25, 0, program);
+	
 
 	modelMatrix.identity();
-	modelMatrix.Translate(-1.5, -1.8, 0);
+	modelMatrix.Translate(-1.75, -1.8, 0);
 	program->setModelMatrix(modelMatrix);
 	DrawText(fontID, "Press ENTER to continue..", .15, 0, program);
 	
@@ -395,7 +418,7 @@ void Game_Entity::renderBackground(){
 
 void Game_Entity::run(){
 	SDL_Init(SDL_INIT_VIDEO);
-	displayWindow = SDL_CreateWindow("Dont Die", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 640, 360, SDL_WINDOW_OPENGL);
+	displayWindow = SDL_CreateWindow("Don't Get CHOPPED!", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 640, 360, SDL_WINDOW_OPENGL);
 	SDL_GLContext context = SDL_GL_CreateContext(displayWindow);
 	SDL_GL_MakeCurrent(displayWindow, context);
 #ifdef _WINDOWS
